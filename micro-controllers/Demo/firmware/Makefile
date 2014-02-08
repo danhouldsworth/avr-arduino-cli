@@ -1,12 +1,14 @@
-# TARGET = main.cpp
-TARGET = oled_main.cpp
+TARGET = main.cpp
+# TARGET = oled_main.cpp
 # TARGET = LiquidCrystal_main.cpp
 # TARGET = WebClient_main.cpp
+# TARGET = serial_OLED.cpp
 
 ARDUINO   = /usr/local/share/arduino/hardware/arduino/cores/arduino
 LIBRARIES = /usr/local/share/arduino/hardware/arduino/libraries
 
-DEVICE = atmega328p
+DEVICE = atmega328
+# DEVICE = atmega328p
 CLOCK = 16000000
 PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
@@ -35,7 +37,7 @@ COMPILE = $(CC) $(CC_ONLY_OPTS) $(COMPILE_OPTS)
 COMPILEXX = $(CXX) $(CXX_ONLY_OPTS) $(COMPILE_OPTS)
 LINKER = $(LINK) $(CC_ONLY_OPTS) $(COMPILE_OPTS) $(LINK_OPTS)
 
-FUSES = #-U hfuse:w:0xd9:m -U lfuse:w:0x24:m
+FUSES = -U hfuse:w:0xdE:m -U efuse:w:0x05:m -U lfuse:w:0xFF:m
 
 # symbolic targets:
 all: build
@@ -166,14 +168,19 @@ main.hex:
 clean:
 	#
 	# Cleaning...
-	@rm -f main.hex main.elf
+	@rm -f main.hex main.elf hfuse.hex efuse.hex lfuse.hex
 	@touch tmp/avoid_error_from_empty_dir
 	@rm tmp/*
 	#...done.
 
-flash:  all
+flash:
 	$(AVRDUDE) -U flash:w:main.hex:i
 
-fuse:
+setfuse:
 	$(AVRDUDE) $(FUSES)
 
+readfuse:
+	$(AVRDUDE) -U hfuse:r:hfuse.hex:i -U lfuse:r:lfuse.hex:i -U efuse:r:efuse.hex:i
+	cat hfuse.hex
+	cat efuse.hex
+	cat lfuse.hex
