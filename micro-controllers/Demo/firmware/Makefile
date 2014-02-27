@@ -1,16 +1,19 @@
-TARGET = main.cpp
-# TARGET = oled_main.cpp
+# TARGET = main.cpp
+TARGET = oled_main.cpp
 # TARGET = LiquidCrystal_main.cpp
 # TARGET = WebClient_main.cpp
 # TARGET = serial_OLED.cpp
+# TARGET = consoleLog.cpp
+
 
 ARDUINO   = /usr/local/share/arduino/hardware/arduino/cores/arduino
 LIBRARIES = /usr/local/share/arduino/hardware/arduino/libraries
 
-DEVICE = atmega328
-# DEVICE = atmega328p
+# DEVICE = atmega328
+DEVICE = atmega328p
 CLOCK = 16000000
-PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
+PROGRAMMER = -c arduino -P /dev/tty.usbmodem1411
+# PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
 
 CC = @avr-gcc
@@ -42,7 +45,7 @@ FUSES = -U hfuse:w:0xdE:m -U efuse:w:0x05:m -U lfuse:w:0xFF:m
 # symbolic targets:
 all: build
 
-build: clean sources cxxsources main.elf main.hex
+build: clean sources cxxsources main main.elf main.hex
 
 sources:
 	#
@@ -63,7 +66,6 @@ sources:
 cxxsources:
 	#
 	# Compiling core .cpp files...
-	$(COMPILEXX) -c $(TARGET) -o tmp/target.o
 	$(COMPILEXX) -c $(ARDUINO)/main.cpp -o tmp/main.o
 	$(COMPILEXX) -c $(ARDUINO)/WMath.cpp -o tmp/WMath.o
 	$(COMPILEXX) -c $(ARDUINO)/Tone.cpp -o tmp/Tone.o
@@ -110,6 +112,12 @@ cxxsources:
 	$(COMPILEXX) -c $(LIBRARIES)/TFT/src/utility/Adafruit_GFX.cpp -o tmp/Adafruit_GFX.o
 	#...done
 	# All .cpp files built successfully!
+
+main:
+	#
+	# Building $(TARGET)...
+	$(COMPILEXX) -c $(TARGET) -o tmp/target.o
+	#...done
 
 main.elf:
 	#
@@ -173,7 +181,7 @@ clean:
 	@rm tmp/*
 	#...done.
 
-flash:
+flash: main main.elf main.hex
 	$(AVRDUDE) -U flash:w:main.hex:i
 
 setfuse:

@@ -13,7 +13,7 @@ A simple test script to check that ISP and build have worked:
 ************************************************************/
 
 #define ratioPin1to2 4
-#define delayInMS 100
+#define delayInMS 250
 #define LED1pin 12
 #define LED2pin 13
 
@@ -48,7 +48,7 @@ int chat(){
             Serial.print(incomingMsg[index++] = Serial.read());
         }
         if (incomingMsg[index-1] == '\r' || incomingMsg[index-1] == '\n'){
-            Serial.print("ECHO back : ");
+            Serial.print("ATmega328 ECHO Back : ");
             Serial.print(incomingMsg);
             Serial.print("\n\r");
             index = 0;
