@@ -5,15 +5,14 @@ TARGET = oled_main.cpp
 # TARGET = serial_OLED.cpp
 # TARGET = consoleLog.cpp
 
-
 ARDUINO   = /usr/local/share/arduino/hardware/arduino/cores/arduino
 LIBRARIES = /usr/local/share/arduino/hardware/arduino/libraries
 
 # DEVICE = atmega328
 DEVICE = atmega328p
 CLOCK = 16000000
-PROGRAMMER = -c arduino -P /dev/tty.usbmodem1411
-# PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
+# PROGRAMMER = -c arduino -P /dev/tty.usbmodem1411
+PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
 
 CC = @avr-gcc
@@ -159,7 +158,8 @@ main.elf:
 		tmp/EEPROM.o \
 		tmp/Adafruit_SSD1306.o \
 		tmp/Adafruit_GFX.o \
-		-o main.elf
+		-o main.elf \
+		-lm
 	#...done
 	# main.elf built successfully!
 
