@@ -1,73 +1,97 @@
-#Project AVR program
+# An Arduino compatible CLI environment
 
-## Installation
+## Setup
 
-From source:
+Get the arduino libraries in place (slightly modified for this purpose):
 
-* Download latest source tarball
-* Or clone it from GitHub: git clone git://github.com/amperka/ino.git
-* Do make install to perform installation under /usr/local
+    git clone avr-arduino-cli
+    cd avr-arduino-cli
+    cp -r arduino /usr/local/share/
 
-## Objective
-* Gain the ability to develope Arduino outside of the IDE - hence speeding learning and resuable code.
-* Better understanding of embedded microcontrollers Bootloader, Fuses, Ports, Flash, Eeprom - useful for Arducopter and custom projects
-* Speed up ability to make custom embedded devices outside of Arduino board. Easier to make modular devices that could be open source hacked
-* DECISION - Will move away ARDUINO library dependancy. PROS - will force deeper understanding, and eventually will lead to much more simplicity of projects. CONS - will be uncompatible with ARDUINO libraries without always modifiying if at all. REVERSE DECISION!!
+Sort out your prefered build tools, eg:
 
-## Milestones
-* Communicate with ATmega via serial UART - *DONE*
-* Set up build tools (make, gcc, avrdude) tailored for the ATmega - *DONE*
-* Get sample fuses, bootloaders, program files to upload - *DONE* (*Booterloader?*)
-* Get template Makefile so can compile, burn, debug(!), download(!) - *DONE*
-* Test avrdude with USB->UART device - ***TBC***
-* Test configure Makefile with correct USB->UART device - ***TBC***
-* `avr-project Demo` - *DONE*
-* edit accordingly with appropriate headers - *DONE*
-* `make` [configure Makefile ATmega code first] - *DONE*
-* `make flash` [configure Makefile avrdude programmer first] - *DONE*
-* `make fuse` [configure Makefile fuse settings first] - *DONE*
-
-### Program
-* Plug in Arduino Uno programmer and detect. - *DONE*
-* Use `ls /dev/tty.usb*` out of interest and then set Makefilee to PROGRAMMER = -c arduino - *DONE*
-* Plug in Pololu programmer and detect. - *DONE*
-* Use `ls /dev/tty.usb*` to get the port number for `AVRDUDE` - *DONE*
-* Test upload of a basic blink - *DONE*
-* Experiment with main.c and check effect - *DONE*
-* Change DDRD to DDR4 - *DONE* (LED only works on pin 4) *DONE*
-* Test upload of a SPI display - *DONE*
-
-### Questions
-* Vdd vs Vbus? On programmer, can only connect if powered by Vbus (or by USB from same device - which is the same). Is the voltage too different? - *VDD is input, and will diconnect if differs from Vbus*
-* Is this uploading a bootloader? Does it work on blank chip? - *No* A bootloader is loaded using flash also / instead, which then allows for subsequent semi-temporary uploads of applications via UART to partitioned flash.
-
-*
-
-### Fuses (see 6)
-* Confirm correct fuses. - *DONE* **Optiboot/Makefile shows atmega328 >> HFUSE = DE, LFUSE = FF, EFUSE = 05 **
-* Read the fuses and compare. - *TBC*
-* Experiment with internal clock rather than external (basic blink code only) - *TBC*
-* Experiment using internal clock with 3rd party devices such as SPI display, RFID reader, LCD display - *TBC*
-
-### Bootloader *EDIT* - as ISP upload is so fast and easy, I no longer need a bootloader to upload via UART. *ABORT*
-* Test upload of a standard Optiboot - *TBC*
-* Modify Optiboot to do, say, 10 flashes on reset. Compile, build, burn - *TBC*
-* Test can still upload a variety of sketches - *TBC*
-
-### Debug
-* Test download of basic blink and compare
-* Add comments and see if can see in dissassemble
-
-### Hardware
-* Make breadboard device than can quickly plug in programmer - *DONE*
+    brew tap larsimmisch/avr
+    brew install avr-libc
+    brew install avrdude --with-usb
 
 
-# Resources :
-1. http://www.ladyada.net/learn/avr/avrdude.html
-2. http://www.engbedded.com/fusecalc/ (no 16MHz..??)
-3. https://creative.adobe.com/join/starter
-4. http://www.nongnu.org/avr-libc/
-5. file:///usr/local/CrossPack-AVR/manual/gettingstarted.html
-6. See /usr/local/CrossPack-AVR/avr/include/avr/iom328p.h
-7. https://github.com/amperka/ino
-8. http://inotool.org/
+## Writing your AVR project
+
+As you would a normal Arduino project but save as a ```.cpp``` extension instead of ```.ino```, and take care with the headers. Always start with :
+
+    #include <Arduino.h>
+
+Then adjust the path for any libraries which are usually held in a parent folder of the same name, eg:
+
+    #include <Wire/Wire.h>
+    #include <SPI/SPI.h>
+
+But sometimes are kept within a ```src``` sub folder of that parent folder, eg:
+
+    #include <LiquidCrystal/src/LiquidCrystal.h>
+    #include <Ethernet/src/Ethernet.h>
+
+Careful with 3rd party libraries, eg:
+
+    #include <TFT/src/utility/Adafruit_GFX.h>
+    #include <TFT/src/utility/Adafruit_SSD1306.h>
+
+By putting your standard Arduino functions:
+
+    void setup(){
+    }
+
+and
+
+    void loop(){
+    }
+
+at the end of the file, it saves having to prototype the functions and therefore far quicker to lift example Arduino sketches as they've been written.
+
+#### Remember : The Arduino IDE was adding ```#include<Arduino.h>``` at the beginning, and also the prototypes for you!
+
+As with the Arduino IDE, this build process then automatically adds :
+
+    int main(void)
+    {
+        init();
+
+        setup();
+
+        for (;;) {
+            loop();
+            if (serialEventRun) serialEventRun();
+        }
+
+        return 0;
+    }
+
+which will excecute your code.
+
+
+## Build
+
+Edit the ```Makefile```
+
+    TARGET=your_project.cpp
+    # Update DEVICE to the chip you are using. Arduino Uno based on atmega328p
+    # Update PROGRAMMER to the ISP programmer you are using to flash the chip.
+    # Update CLOCK if the cystal is set to different speed, OR if using internal clock for the project.
+
+then build with:
+
+    make
+
+You will see all the libraries getting built and linked into a ```.elf``` and then a ```.hex``` file for your selected chip, which can then by flashed with:
+
+    make flash
+
+Or in one go:
+
+    make readfuses clean all flash
+
+Now we can get some proper work done with a [decent text editor](http://www.sublimetext.com/), version control and using [as many chips as we need](http://www.hobbytronics.co.uk/atmega328?keyword=atmega) rather than buying an Arduino each time.
+
+:-)
+
+

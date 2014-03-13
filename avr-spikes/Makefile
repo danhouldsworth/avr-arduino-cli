@@ -1,18 +1,26 @@
+# ************** Update to your 'main' file using a .cpp extension *************
+TARGET = ServoPro1.cpp
 # TARGET = main.cpp
-TARGET = oled_main.cpp
+# TARGET = oled_main.cpp
 # TARGET = LiquidCrystal_main.cpp
 # TARGET = WebClient_main.cpp
 # TARGET = serial_OLED.cpp
 # TARGET = consoleLog.cpp
+# ******************************************************************************
 
-ARDUINO   = /usr/local/share/arduino/hardware/arduino/cores/arduino
-LIBRARIES = /usr/local/share/arduino/hardware/arduino/libraries
+# ******* Make sure you copy the 'arduino' folder to '/usr/local/share/' *******
+ARDUINO   = /usr/local/share/arduino/cores/arduino
+LIBRARIES = /usr/local/share/arduino/libraries
+# ******************************************************************************
 
+# *** Update for the AVR chip, the Programmer and the clock for this project ***
 # DEVICE = atmega328
 DEVICE = atmega328p
 CLOCK = 16000000
 # PROGRAMMER = -c arduino -P /dev/tty.usbmodem1411
 PROGRAMMER = -c avrisp2 -P /dev/tty.usbmodem00065771
+# ******************************************************************************
+
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
 
 CC = @avr-gcc
@@ -159,7 +167,7 @@ main.elf:
 		tmp/Adafruit_SSD1306.o \
 		tmp/Adafruit_GFX.o \
 		-o main.elf \
-		-lm
+		-lm # make compatible with brew avrdude
 	#...done
 	# main.elf built successfully!
 
