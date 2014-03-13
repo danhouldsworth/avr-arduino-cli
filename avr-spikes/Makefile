@@ -1,6 +1,6 @@
 # ************** Update to your 'main' file using a .cpp extension *************
-TARGET = ServoPro1.cpp
-# TARGET = main.cpp
+# TARGET = ServoPro1.cpp
+TARGET = main.cpp
 # TARGET = oled_main.cpp
 # TARGET = LiquidCrystal_main.cpp
 # TARGET = WebClient_main.cpp
